@@ -1,0 +1,72 @@
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Collections;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
+using System.Text;
+using System;
+
+class Result
+{
+    /*
+     * Complete the 'minimumLoss' function below.
+     *
+     * The function is expected to return a LONG_INTEGER.
+     * The function accepts LONG_INTEGER_ARRAY price as parameter.
+     */
+
+    public static long minimumLoss(List<long> price)
+    {
+        // Store price with original index (year)
+        var indexedPrices = price
+            .Select((p, i) => new { Price = p, Index = i })
+            .OrderByDescending(x => x.Price)
+            .ToList();
+
+        long minLoss = long.MaxValue;
+
+        // Compare only adjacent elements in descending order
+        for (int i = 0; i < indexedPrices.Count - 1; i++)
+        {
+            var high = indexedPrices[i];
+            var low = indexedPrices[i + 1];
+
+            // Ensure we buy before sell (buy year < sell year)
+            if (high.Index < low.Index)
+            {
+                long loss = high.Price - low.Price;
+                if (loss > 0 && loss < minLoss)
+                    minLoss = loss;
+            }
+        }
+
+        return minLoss;
+    }
+}
+
+class Solution
+{
+    public static void Main(string[] args)
+    {
+        TextWriter textWriter = new StreamWriter(@System.Environment.GetEnvironmentVariable("OUTPUT_PATH"), true);
+
+        int n = Convert.ToInt32(Console.ReadLine().Trim());
+        List<long> price = Console.ReadLine()
+            .TrimEnd()
+            .Split(' ')
+            .Select(long.Parse)
+            .ToList();
+
+        long result = Result.minimumLoss(price);
+
+        textWriter.WriteLine(result);
+        textWriter.Flush();
+        textWriter.Close();
+    }
+}
